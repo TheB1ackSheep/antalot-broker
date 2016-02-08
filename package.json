@@ -1,0 +1,18 @@
+{
+  "name": "antalot-broker",
+  "version": "0.0.1",
+  "description": "MQTT server for antalot project",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Falook Glico",
+  "license": "ISC",
+  "dependencies": {
+    "cli-color": "^1.1.0",
+    "clui": "^0.3.1",
+    "mongodb": "^2.1.6",
+    "mosca": "^1.0.2",
+    "winston": "^2.1.1"
+  }
+}
