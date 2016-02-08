@@ -9,6 +9,15 @@ var db_url = 'mongodb://localhost/';
 
 var server = new mosca.Server(config.mqtt_setting);
 
+server.checkPermission = function(user, topic){
+  var permissions = user.permissions;
+  var hasPermission = false;
+  if(permissions)
+    for(var permission of permissions)
+      if(!hasPermission) hasPermission = topic.match(permission);
+      else break;
+};
+
 i.banner();
 
 server.on('ready', () => {
@@ -33,24 +42,25 @@ server.on('ready', () => {
   
   db_conn.success((db) => {
     i.success("Database connected.");
-    i.info("Broker is up and running.")
+    i.success("Broker is up and running.");
     server.authenticate = (client, username, password, callback) => {
       var user_collection = db.collection('users');
       user_collection.find({username:username, pwd:password.toString()}).toArray(function(err, docs){
         var authorized = docs.length > 0;
-        if (authorized) client.user = username;
+        if (authorized) client.user = docs[0];
         callback(null, authorized);
       });
-    }
+    };
     server.authorizePublish = (client, topic, payload, callback) => {
-      callback(null, payload);
-    }
+      if(server.checkPermission(client.user, topic))
+        callback(null, payload);
+    };
     server.authorizeSubscribe = (client, topic, callback) => {
-      callback(null, true);
-    } 
+      callback(null, server.checkPermission(client.user, topic)?true:false);
+    }; 
   });  
 });
 
 server.on('clientConnected', (client) => {
-  i.info('connection accepted from', client.id);
+  process.stdout.write('connection accepted from' + client.id + '\r');
 });
