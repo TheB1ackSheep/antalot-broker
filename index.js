@@ -5,7 +5,7 @@ var mosca = require('mosca'),
   i = require('./log.js'),
   Retry = require('./retry.js');
 
-var db_url = 'mongodb://localhost/';
+var db_url = 'mongodb://localhost/users';
 
 var server = new mosca.Server(config.mqtt_setting);
 
@@ -16,6 +16,7 @@ server.checkPermission = function(user, topic){
     for(var permission of permissions)
       if(!hasPermission) hasPermission = topic.match(permission);
       else break;
+  return hasPermission !== null;    
 };
 
 i.banner();
@@ -45,22 +46,40 @@ server.on('ready', () => {
     i.success("Broker is up and running.");
     server.authenticate = (client, username, password, callback) => {
       var user_collection = db.collection('users');
-      user_collection.find({username:username, pwd:password.toString()}).toArray(function(err, docs){
-        var authorized = docs.length > 0;
-        if (authorized) client.user = docs[0];
-        callback(null, authorized);
-      });
+      if(username && password)
+        user_collection.find({name:username, passwd:password.toString()}).toArray(function(err, docs){
+          var authorized = docs.length > 0;
+          if (authorized) client.user = docs[0];
+          callback(null, authorized);
+        });
+      else
+        callback(null, false);
     };
     server.authorizePublish = (client, topic, payload, callback) => {
-      if(server.checkPermission(client.user, topic))
+      if(server.checkPermission(client.user, topic)){
+        i.success(client.id, 'published.');
+        i.info('\tTopic : ', topic);
+        i.info('\tMessage : ', payload.toString());
         callback(null, payload);
+      }else{
+        i.warn('Unauthorize published found.');
+        i.warn('\tClient : ', client.id);
+      }
     };
     server.authorizeSubscribe = (client, topic, callback) => {
-      callback(null, server.checkPermission(client.user, topic)?true:false);
+      if(server.checkPermission(client.user, topic)){
+        callback(null, true);
+        i.success(client.id, 'subscribed.');
+        i.info('\tTopic : ', topic);
+      }else{
+        i.warn('Unauthorize subscribed found.');
+        i.warn('\tClient : ', client.id);
+        callback(null, false);
+      }
     }; 
   });  
 });
 
 server.on('clientConnected', (client) => {
-  process.stdout.write('connection accepted from' + client.id + '\r');
+  i.info('connection accepted from', client.id);
 });

@@ -23,11 +23,11 @@ exports.banner = function(){
   console.log(clc.cyan("==============================================="));
   console.log(clc.cyan("             ANTALOT MQTT BROKER"));
   console.log(clc.cyan("==============================================="));
-}
+};
 
 var argsToStr = function(args){
   return Array.prototype.slice.call(args, 0).join(" ");
-}
+};
 
 exports.info = function(){
   console.log.apply(console, arguments);

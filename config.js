@@ -1,8 +1,8 @@
 
 exports.mqtt_setting = {
   secure : { 
-    port: 8443,
-    keyPath: './ssl/key.pem',
-    certPath: './ssl/cert.pem',
+    port: 8883,
+    keyPath: './ssl/privkey2.pem',
+    certPath: './ssl/cert2.pem',
   }
 };

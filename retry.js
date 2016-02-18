@@ -23,4 +23,4 @@ module.exports = class Retry{
     this.event.emit.apply(this.event, arguments);
   }
   
-}
+};
