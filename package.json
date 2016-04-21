@@ -11,7 +11,7 @@
   "dependencies": {
     "cli-color": "^1.1.0",
     "clui": "^0.3.1",
-    "mongodb": "^2.1.6",
+    "cradle": "^0.7.1",
     "mosca": "^1.0.2",
     "winston": "^2.1.1"
   }

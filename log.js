@@ -5,7 +5,7 @@ var winston = require('winston'),
 
 var error = new (winston.Logger)({
     transports: [
-      new (winston.transports.File)({ 
+      new (winston.transports.File)({
         filename: 'error.log',
         level: 'error' })
     ]
@@ -13,7 +13,7 @@ var error = new (winston.Logger)({
 
 var info = new (winston.Logger)({
     transports: [
-      new (winston.transports.File)({ 
+      new (winston.transports.File)({
         filename: 'info.log',
         level: 'info' })
     ]
@@ -31,7 +31,7 @@ var argsToStr = function(args){
 
 exports.info = function(){
   console.log.apply(console, arguments);
-  info.log("info", argsToStr(arguments));    
+  info.log("info", argsToStr(arguments));
 };
 
 exports.warn = function(){
@@ -48,7 +48,7 @@ exports.error = function(msg, ex){
   console.error(clc.red(argsToStr(arguments)));
   error.log("info", argsToStr(arguments));
   if(ex) {
-    console.error(clc.red("\t", ex));
+    console.error(clc.red(ex));
     error.log("error", ex);
   }
 };
