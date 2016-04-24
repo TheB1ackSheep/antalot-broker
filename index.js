@@ -1,6 +1,5 @@
 
 var mosca = require('mosca'),
-  cradle = require('cradle'),
   config = require('./config.js'),
   i = require('./log.js'),
   Retry = require('./retry.js'),
@@ -38,10 +37,10 @@ server.on('published', function(packet, client) {
   var topic = packet.topic;
   var payload = packet.payload.toString();
   var slugs = topic.split('/');
-  
+
   // get rid of the first array elem
   slugs.splice(0,1);
-  
+
   for(key in slugs){
     if(!slugs[key].match('^[a-z0-9-]+$'))
       return;
@@ -71,7 +70,7 @@ server.on('published', function(packet, client) {
     }else{
       i.error('sensor name "'+sensor_slug+'" is published invalid data');
     }
-    
+
   }else if(topic.match('^\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/[a-z0-9-]+\/output$')){
     if(payload.match('^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$')){
         // check payload is either int or float
@@ -81,8 +80,8 @@ server.on('published', function(packet, client) {
     }
 
   }
-  
-  
+
+
 });
 
 String.prototype.isJson = function () {
