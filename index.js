@@ -14,8 +14,6 @@ new mqtt.SecureServer({
 }, function(client) {
   var self = this;
   
-  i.info('MQTT server is started.');
-  
   if (!self.clients) self.clients = {};
 
   client.on('connect', function(packet) {
