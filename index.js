@@ -10,7 +10,7 @@ i.banner();
 
 new mqtt.SecureServer({
 	 key: fs.readFileSync(__dirname + '/ssl/privkey.pem'),
-	 cert: fs.readFileSync(__dirname + '/ssl/fullchain.pem'),
+	 cert: fs.readFileSync(__dirname + '/ssl/cert.pem'),
 }, function(client) {
   var self = this;
   
