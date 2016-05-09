@@ -1,37 +1,35 @@
 
-var mosca = require('mosca'),
-  config = require('./config.js'),
-  i = require('./log.js'),
-  Retry = require('./retry.js'),
-  Firebase = require("firebase");
-
-// Config for mqtt server
-var server = new mosca.Server(config.mqtt_setting);
-
-/*server.checkPermission = function(user, topic){
-  var permissions = user.permissions;
-  var hasPermission = false;
-  if(permissions)
-    for(var permission of permissions)
-      if(!hasPermission) hasPermission = topic.match(permission);
-      else break;
-  return hasPermission !== null;
-};*/
-
-// Print the bannner on console
+var mqtt      = require('mqtt'),
+    fs        = require('fs');
+    config    = require('./config.js'),
+    i         = require('./log.js'),
+    Retry     = require('./retry.js'),
+    Firebase  = require("firebase");
+    
 i.banner();
 
-// Bind ready event for mqtt server
-server.on('ready', () => {
+new mqtt.SecureServer({
+	 key: fs.readFileSync(__dirname + '/ssl/privkey.pem'),
+	 cert: fs.readFileSync(__dirname + '/ssl/fullchain.pem'),
+}, function(client) {
+  var self = this;
+  
   i.info('MQTT server is started.');
-});
+  
+  if (!self.clients) self.clients = {};
 
-server.on('clientConnected', (client) => {
-  i.info('connection accepted from', client.id);
-});
-
-server.on('published', function(packet, client) {
-  i.info(packet.topic, packet.payload.toString());
+  client.on('connect', function(packet) {
+    client.connack({returnCode: 0});
+    client.id = packet.clientId;
+    self.clients[client.id] = client;
+  });
+  
+  client.on('publish', function(packet) {
+    for (var k in self.clients) {
+    	self.clients[k].publish({topic: packet.topic, payload: packet.payload});
+    }
+    
+    i.info(packet.topic, packet.payload.toString());
 
   // run check for topic convention
   var topic = packet.topic;
@@ -80,9 +78,36 @@ server.on('published', function(packet, client) {
     }
 
   }
+  
+  });
 
+  client.on('subscribe', function(packet) {
+    var granted = [];
+    for (var i = 0; i < packet.subscriptions.length; i++) {
+      granted.push(packet.subscriptions[i].qos);
+    }
+    client.suback({granted: granted, messageId: packet.messageId});
+  });
 
-});
+  client.on('pingreq', function(packet) {
+    client.pingresp();
+  });
+
+  client.on('disconnect', function(packet) {
+    client.stream.end();
+  });
+
+  client.on('close', function(err) {
+    delete self.clients[client.id];
+  });
+
+  client.on('error', function(err) {
+    client.stream.end();
+    console.log('error!');
+  });
+  
+}).listen(8883);
+
 
 String.prototype.isJson = function () {
   try {
